@@ -1,7 +1,7 @@
 import { Main, Form, Nav, Section } from "./style"
 import rocket from "../../assets/rocket.svg"
 import Input from "../../components/Input"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Button from "../../components/Button"
 import Task from "../../components/Task"
 import NoTask from "../../components/NoTask"
@@ -16,6 +16,8 @@ export default function Home() {
     const [done, setDone] = useState(false);
 
 
+    console.log(task)
+    
     const removeTask = (textForTask) => {
 
 
@@ -25,13 +27,32 @@ export default function Home() {
           return
         }
 
+        
+        localStorage.removeItem("@todo:task");
         setTask(e => task.filter(entries => entries.text !==  textForTask))
+
+
+        console.log(task)
+        //localStorage.setItem("@todo:task", JSON.stringify(task))
+
 
         
     }
 
 
+    useEffect(() => {
+      const allTask = localStorage.getItem("@todo:task");
+      const transformTask = JSON.parse(allTask);
 
+      if(allTask && transformTask) {
+
+        setTask(transformTask);
+      }
+
+
+    }, [])
+
+    
     return (
       <Main>
         <header>
@@ -47,7 +68,7 @@ export default function Home() {
         <Nav>
           <Form action="#" onSubmit={(e) => {
             e.preventDefault();
-
+            
             if(e.target.value === "") {
               return alert("Preencha com a tarefa")
             }
@@ -55,23 +76,32 @@ export default function Home() {
             const objectTask = {
                 text: newTask,
                 completed: false
-            }
+              }
 
-            setTask(e => [objectTask, ...e])
+              const searchIfTaskNameExists = task.filter(entries => entries.text === newTask);
 
-        
-          }}>
+              if(searchIfTaskNameExists.length > 0 ) {
+                alert("Já existe uma task com esse nome")
+                return
+              }
+
+              setTask(preventState => [objectTask, ...preventState])
+              localStorage.setItem("@todo:task", JSON.stringify(task))
+  
+            }}>
             <Input 
                 onFocus={e => setInput(!input)} 
                 onBlur={e => setInput(!input)}
                 onChange={e => setNewTask(e.target.value)}
                 filled={input}
-
-            
-            />
+                
+                
+                />
 
             <div>
-              <Button type="submit"/>
+              <Button type="submit" onClick={() => {
+                
+              }}/>
             </div>
           </Form>
         </Nav>
