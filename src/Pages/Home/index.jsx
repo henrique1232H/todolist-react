@@ -14,8 +14,9 @@ export default function Home() {
   const [task, setTask] = useState([])
   const [completed, setCompleted] = useState([])
   const [done, setDone] = useState(false);
-  const [id, setId] = useState(0)
-  
+  const [id, setId] = useState(0);
+    
+
   const removeTask = (taskToRemove) => {
     const taskRemove = task.filter(entries => entries.id !== taskToRemove.id);
     setTask(e => task.filter(entries => entries.id !== taskToRemove.id)); 
@@ -26,15 +27,21 @@ export default function Home() {
   const saveTask = (data) =>  {
     const oldTask = localStorage.getItem("@todo:task");
     const convert = JSON.parse(oldTask);
+    console.log(convert)
 
-    if(convert.length < 1) {
-      localStorage.removeItem("@todo:task")
-    } else {
-      localStorage.setItem("@todo:task", JSON.stringify(task))
-
-    }
+    localStorage.setItem("@todo:task", JSON.stringify(data))
 
   }
+
+  try {
+    if(task.length > 0) {
+      localStorage.setItem("@todo:task", JSON.stringify(task))
+    }
+
+  } catch (err) {
+    console.log(err)
+  }
+
   
   const doneTask = (doneTask) => {
     doneTask.completed = !doneTask.completed;
@@ -48,9 +55,12 @@ export default function Home() {
 
   
   useEffect(() => {
+
+
     try {
       const allTask = localStorage.getItem("@todo:task");
       const transformTask = JSON.parse(allTask);
+      setId(transformTask.length)
 
       if(allTask && transformTask) {
         setTask(transformTask);
@@ -92,7 +102,7 @@ export default function Home() {
               text: newTask,
               completed: done
             }
-            
+
             const searchIfTaskNameExists = task.filter(entries => entries.text === newTask);
             
             if(searchIfTaskNameExists.length > 0 ) {
@@ -101,8 +111,7 @@ export default function Home() {
             }
             
             setTask(preventState => [objectTask, ...preventState]);
-            saveTask()
-
+     
             
           }}>
             <Input 
