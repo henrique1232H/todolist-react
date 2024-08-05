@@ -19,7 +19,7 @@ export default function Task({text, completed, done, remove}) {
 
             <h3>{text}</h3>
 
-            <button value={text} onClick={remove}>
+            <button onClick={remove}>
                 <FaRegTrashCan />
             </button>
         </Container>

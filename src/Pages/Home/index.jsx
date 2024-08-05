@@ -8,53 +8,65 @@ import NoTask from "../../components/NoTask"
 
 
 export default function Home() {
+  
+  const [input, setInput] = useState(false);
+  const [newTask, setNewTask] = useState("");
+  const [task, setTask] = useState([])
+  const [completed, setCompleted] = useState([])
+  const [done, setDone] = useState(false);
+  const [id, setId] = useState(0)
+  
+  const removeTask = (taskToRemove) => {
+    const taskRemove = task.filter(entries => entries.id !== taskToRemove.id);
+    setTask(e => task.filter(entries => entries.id !== taskToRemove.id)); 
 
-    const [input, setInput] = useState(false);
-    const [newTask, setNewTask] = useState("");
-    const [task, setTask] = useState([])
-    const [completed, setCompleted] = useState([])
-    const [done, setDone] = useState(false);
+    saveTask(taskRemove)
+  }
 
+  const saveTask = (data) =>  {
+    const oldTask = localStorage.getItem("@todo:task");
+    const convert = JSON.parse(oldTask);
 
-    console.log(task)
-    
-    const removeTask = (textForTask) => {
+    if(convert.length < 1) {
+      localStorage.removeItem("@todo:task")
+    } else {
+      localStorage.setItem("@todo:task", JSON.stringify(task))
 
-
-
-        if(task.length < 2) {
-          setTask([])
-          return
-        }
-
-        
-        localStorage.removeItem("@todo:task");
-        setTask(e => task.filter(entries => entries.text !==  textForTask))
-
-
-        console.log(task)
-        //localStorage.setItem("@todo:task", JSON.stringify(task))
-
-
-        
     }
 
+  }
+  
+  const doneTask = (doneTask) => {
+    doneTask.completed = !doneTask.completed;
+    doneTask.completed === false ? 
+    setCompleted(e => completed.filter(entries => entries.id !== doneTask.id))
+    :
+    setCompleted(preventState => [...preventState, doneTask])
 
-    useEffect(() => {
+    setDone(!done)
+  }
+
+  
+  useEffect(() => {
+    try {
       const allTask = localStorage.getItem("@todo:task");
       const transformTask = JSON.parse(allTask);
 
       if(allTask && transformTask) {
-
         setTask(transformTask);
       }
 
-
-    }, [])
-
+    } catch (err) {
+      console.log(err)
+    }
     
-    return (
-      <Main>
+    console.log(task)
+    
+  }, [])
+  
+  
+  return (
+    <Main>
         <header>
           <div>
             <img src={rocket} alt="" />
@@ -73,22 +85,26 @@ export default function Home() {
               return alert("Preencha com a tarefa")
             }
             
+            setId(id + 1)
+
             const objectTask = {
-                text: newTask,
-                completed: false
-              }
+              id: id,
+              text: newTask,
+              completed: done
+            }
+            
+            const searchIfTaskNameExists = task.filter(entries => entries.text === newTask);
+            
+            if(searchIfTaskNameExists.length > 0 ) {
+              alert("Já existe uma task com esse nome")
+              return
+            }
+            
+            setTask(preventState => [objectTask, ...preventState]);
+            saveTask()
 
-              const searchIfTaskNameExists = task.filter(entries => entries.text === newTask);
-
-              if(searchIfTaskNameExists.length > 0 ) {
-                alert("Já existe uma task com esse nome")
-                return
-              }
-
-              setTask(preventState => [objectTask, ...preventState])
-              localStorage.setItem("@todo:task", JSON.stringify(task))
-  
-            }}>
+            
+          }}>
             <Input 
                 onFocus={e => setInput(!input)} 
                 onBlur={e => setInput(!input)}
@@ -101,6 +117,7 @@ export default function Home() {
             <div>
               <Button type="submit" onClick={() => {
                 
+                localStorage.setItem("@todo:task", JSON.stringify(task))
               }}/>
             </div>
           </Form>
@@ -124,7 +141,15 @@ export default function Home() {
                 ? <NoTask />
                 
                 : task.map(entries => {
-                    return <Task key={entries.text} remove={e => removeTask(e.target.value)}  text={entries.text} completed={e => setDone(!done)}  done={done}/>
+
+                    
+                    return <Task 
+                    key={entries.id}
+                    id={entries.id}
+                    remove={e => removeTask(entries)}  
+                    text={entries.text} 
+                    completed={e => doneTask(entries)}  
+                    done={entries.completed}/>
                 })
             }
 
