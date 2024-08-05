@@ -20,7 +20,6 @@ export default function Home() {
   const removeTask = (taskToRemove) => {
     const taskRemove = task.filter(entries => entries.id !== taskToRemove.id);
     setTask(e => task.filter(entries => entries.id !== taskToRemove.id)); 
-
     saveTask(taskRemove)
   }
 
@@ -60,7 +59,10 @@ export default function Home() {
     try {
       const allTask = localStorage.getItem("@todo:task");
       const transformTask = JSON.parse(allTask);
+
+      const completedTask = transformTask.filter(entries => entries.completed === true);
       setId(transformTask.length)
+      setCompleted(completedTask)
 
       if(allTask && transformTask) {
         setTask(transformTask);
@@ -69,8 +71,6 @@ export default function Home() {
     } catch (err) {
       console.log(err)
     }
-    
-    console.log(task)
     
   }, [])
   
@@ -95,14 +95,7 @@ export default function Home() {
               return alert("Preencha com a tarefa")
             }
             
-            setId(id + 1)
-
-            const objectTask = {
-              id: id,
-              text: newTask,
-              completed: done
-            }
-
+            
             const searchIfTaskNameExists = task.filter(entries => entries.text === newTask);
             
             if(searchIfTaskNameExists.length > 0 ) {
@@ -110,7 +103,8 @@ export default function Home() {
               return
             }
             
-            setTask(preventState => [objectTask, ...preventState]);
+            setId(id + 1)
+            setTask(preventState => [{id: id, text: newTask, completed: done}, ...preventState]);
      
             
           }}>
